@@ -1,0 +1,40 @@
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "9080:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - web
+
+  backend:
+    image: tiangolo/uvicorn-gunicorn-fastapi:python3.11
+    restart: unless-stopped
+    environment:
+      - MODULE_NAME=app.main
+      - VARIABLE_NAME=app
+    volumes:
+      - ./backend:/app
+    networks:
+      - web
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    networks:
+      - web
+
+networks:
+  web:
+
+volumes:
+  caddy_data:
+  caddy_config:
